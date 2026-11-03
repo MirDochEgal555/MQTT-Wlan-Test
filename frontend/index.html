@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Ink Tischkarte – Kommunikationslabor</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation / Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-mark">
+                    <span class="epd-chip">EPD</span>
+                </div>
+                <div>
+                    <h1>E-INK TISCHKARTE <span class="badge-lab">KOMMUNIKATIONSLABOR</span></h1>
+                    <p class="subtitle">2 Displays · Lokale Simulation · YUPSALE Technologievergleich</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-pill" id="mqttStatusBadge">
+                    <span class="dot dot-green"></span>
+                    <span>MQTT Broker: <strong id="mqttPortText">1883</strong></span>
+                </div>
+                <div class="status-pill" id="wsStatusBadge">
+                    <span class="dot dot-green" id="wsDot"></span>
+                    <span id="wsText">Live verbunden</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <main class="main-content">
+            <!-- Displays Side-by-Side -->
+            <section class="displays-section">
+                <div class="displays-grid">
+                    
+                    <!-- DISPLAY 001: MQTT Gateway -->
+                    <div class="display-card" id="cardDisplay001">
+                        <div class="display-header">
+                            <div class="display-title-group">
+                                <span class="tag-channel tag-mqtt">WEG A · MQTT</span>
+                                <h2>DISPLAY 001 <span class="device-id">gateway/001</span></h2>
+                            </div>
+                            <div class="display-status-tag" id="d1StatusTag">
+                                <span class="pulse-indicator"></span>
+                                <span id="d1StatusText">Gateway verbunden</span>
+                            </div>
+                        </div>
+
+                        <!-- Physical E-Ink Mockup Frame -->
+                        <div class="eink-mockup-frame">
+                            <div class="eink-bezel">
+                                <div class="eink-screen-wrapper" id="d1ScreenWrapper">
+                                    <img id="d1Image" src="/images/menu.png" alt="Display 001 E-Ink Vorschau" class="eink-screen-image">
+                                    <div class="eink-refresh-overlay" id="d1RefreshOverlay"></div>
+                                    <div class="eink-offline-overlay" id="d1OfflineOverlay">
+                                        <div class="offline-box">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+                                            <p>GATEWAY OFFLINE</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bezel-label">GASTRO-EPD 7.5" · SUB-1GHz RF</div>
+                            </div>
+                            <div class="eink-stand"></div>
+                        </div>
+
+                        <!-- Device Telemetry Specs -->
+                        <div class="telemetry-bar">
+                            <div class="tel-item">
+                                <span class="tel-label">Bildversion</span>
+                                <span class="tel-val font-mono" id="d1Version">v1</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">Signal (RF)</span>
+                                <span class="tel-val font-mono" id="d1Rssi">-65 dBm</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">Batterie</span>
+                                <span class="tel-val font-mono" id="d1Battery">3.15 V (98%)</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">Architektur</span>
+                                <span class="tel-val">Push via Gateway</span>
+                            </div>
+                        </div>
+
+                        <!-- Device Controls -->
+                        <div class="display-actions">
+                            <button class="btn btn-primary" id="btnSendMqtt" onclick="triggerMqttUpdate()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                Update senden
+                            </button>
+                            <button class="btn btn-outline" id="btnToggleGateway" onclick="toggleGatewayOnline()">
+                                <span id="btnGatewayText">Gateway: Online</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- DISPLAY 002: WLAN Direct -->
+                    <div class="display-card" id="cardDisplay002">
+                        <div class="display-header">
+                            <div class="display-title-group">
+                                <span class="tag-channel tag-wifi">WEG B · WLAN</span>
+                                <h2>DISPLAY 002 <span class="device-id">ESP32 / Inkplate</span></h2>
+                            </div>
+                            <div class="display-status-tag status-sleeping" id="d2StatusTag">
+                                <span class="sleep-icon">💤</span>
+                                <span id="d2StatusText">Schläft / nächster Abruf in 15s</span>
+                            </div>
+                        </div>
+
+                        <!-- Physical E-Ink Mockup Frame -->
+                        <div class="eink-mockup-frame">
+                            <div class="eink-bezel">
+                                <div class="eink-screen-wrapper" id="d2ScreenWrapper">
+                                    <img id="d2Image" src="/images/menu.png" alt="Display 002 E-Ink Vorschau" class="eink-screen-image">
+                                    <div class="eink-refresh-overlay" id="d2RefreshOverlay"></div>
+                                    <div class="eink-offline-overlay" id="d2OfflineOverlay">
+                                        <div class="offline-box">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+                                            <p>WLAN NICHT ERREICHBAR</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bezel-label">INKPLATE 10 · 802.11 b/g/n</div>
+                            </div>
+                            <div class="eink-stand"></div>
+                        </div>
+
+                        <!-- Device Telemetry Specs -->
+                        <div class="telemetry-bar">
+                            <div class="tel-item">
+                                <span class="tel-label">Bildversion</span>
+                                <span class="tel-val font-mono" id="d2Version">v1</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">WLAN RSSI</span>
+                                <span class="tel-val font-mono" id="d2Rssi">-62 dBm</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">Batterie</span>
+                                <span class="tel-val font-mono" id="d2Battery">3.28 V (96%)</span>
+                            </div>
+                            <div class="tel-item">
+                                <span class="tel-label">Nächster Abruf</span>
+                                <span class="tel-val font-mono countdown-highlight" id="d2Countdown">15.0s</span>
+                            </div>
+                        </div>
+
+                        <!-- Device Controls -->
+                        <div class="display-actions">
+                            <button class="btn btn-secondary" id="btnWakeWifi" onclick="triggerWifiWake()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                                Jetzt aufwecken
+                            </button>
+                            <button class="btn btn-outline" id="btnToggleWifi" onclick="toggleWifiOnline()">
+                                <span id="btnWifiText">WLAN: Online</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Interactive Controller & Content Editor -->
+            <section class="controls-section">
+                <div class="card control-card">
+                    <div class="card-header">
+                        <div class="header-icon">✍️</div>
+                        <div>
+                            <h3>Tischkarten-Inhalt ändern</h3>
+                            <p class="section-desc">Erstellt eine neue Bildversion und triggert den Nachrichtenfluss</p>
+                        </div>
+                    </div>
+
+                    <div class="presets-row">
+                        <span class="preset-label">Schnellvorlagen:</span>
+                        <button class="btn-chip" onclick="applyPreset('soup')">🥣 Kürbissuppe (6,90 €)</button>
+                        <button class="btn-chip" onclick="applyPreset('schnitzel')">🥩 Wiener Schnitzel (18,50 €)</button>
+                        <button class="btn-chip" onclick="applyPreset('lemonade')">🍋 Limonade (4,20 €)</button>
+                        <button class="btn-chip" onclick="applyPreset('reserved')">🏷️ Reserviert / Reserved</button>
+                    </div>
+
+                    <form id="cardForm" onsubmit="handleFormSubmit(event)" class="menu-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="inputBadge">Kopfzeile / Badge</label>
+                                <input type="text" id="inputBadge" value="HEUTE EMPFOHLEN" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputTitle">Gericht / Titel</label>
+                                <input type="text" id="inputTitle" value="Kürbissuppe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSubtitle">Beschreibung / Zutaten</label>
+                                <input type="text" id="inputSubtitle" value="mit gerösteten Kürbiskernen & Steirischem Kernöl" required>
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label for="inputPrice">Preis</label>
+                                <input type="text" id="inputPrice" value="6,90 €" required>
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <div class="options-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="checkDither">
+                                    <span>Echte 1-Bit E-Ink Rasterung (Floyd-Steinberg Dithering)</span>
+                                </label>
+                            </div>
+                            <div class="button-group">
+                                <button type="button" class="btn btn-outline" onclick="saveOnlyImage()">
+                                    Nur Bild rendern (Manifest-Test)
+                                </button>
+                                <button type="submit" class="btn btn-action">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    Speichern & Beide Displays aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Protocol Flow Visualizer -->
+            <section class="flow-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="header-icon">🔄</div>
+                        <div>
+                            <h3>Protokoll- & Nachrichtenweg</h3>
+                            <p class="section-desc">Visualisiert die beiden Kommunikationspfade im Vergleich</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-comparison">
+                        <!-- Flow A -->
+                        <div class="flow-stream stream-mqtt">
+                            <div class="flow-stream-title">A · MQTT-Gateway (Server stößt Push an)</div>
+                            <div class="flow-steps">
+                                <div class="step-box" id="stepUI">Weboberfläche</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepBackend">Backend API</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepBroker">MQTT Broker</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepGateway">Gateway 001</div>
+                                <div class="flow-arrow">→ RF →</div>
+                                <div class="step-box" id="stepDisplay1">Display 001 (E-Ink)</div>
+                            </div>
+                        </div>
+
+                        <!-- Flow B -->
+                        <div class="flow-stream stream-wifi">
+                            <div class="flow-stream-title">B · WLAN Direkt (Display fragt zyklisch nach)</div>
+                            <div class="flow-steps">
+                                <div class="step-box" id="stepD2Wake">1. Aufwachen</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepD2Wifi">2. WLAN Connect</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepD2Manifest">3. GET /manifest</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepD2Image">4. GET /images/..</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="step-box" id="stepD2Sleep">5. Deep Sleep (15s)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Real-time Message Log -->
+            <section class="log-section">
+                <div class="card">
+                    <div class="card-header log-header">
+                        <div class="header-left-sub">
+                            <div class="header-icon">📋</div>
+                            <div>
+                                <h3>NACHRICHTEN-LOG (Live Protokoll)</h3>
+                                <p class="section-desc">Protokolliert alle Backend-, MQTT- und HTTP-Ereignisse in Echtzeit</p>
+                            </div>
+                        </div>
+                        <div class="log-toolbar">
+                            <div class="log-filters">
+                                <button class="filter-btn active" data-filter="all" onclick="setLogFilter('all')">Alle</button>
+                                <button class="filter-btn" data-filter="Backend" onclick="setLogFilter('Backend')">Backend</button>
+                                <button class="filter-btn" data-filter="MQTT" onclick="setLogFilter('MQTT')">MQTT</button>
+                                <button class="filter-btn" data-filter="Gateway" onclick="setLogFilter('Gateway')">Gateway</button>
+                                <button class="filter-btn" data-filter="WLAN-Display 002" onclick="setLogFilter('WLAN-Display 002')">WLAN</button>
+                            </div>
+                            <button class="btn btn-sm btn-outline" onclick="clearLogs()">Log leeren</button>
+                        </div>
+                    </div>
+
+                    <div class="log-console-wrapper">
+                        <div class="log-console" id="logConsole">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Decision & Architecture Matrix (from README) -->
+            <section class="matrix-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="header-icon">📊</div>
+                        <div>
+                            <h3>Entscheidungsmatrix für Rollout (150–200 Tischkarten)</h3>
+                            <p class="section-desc">Aus dem Projektkonzept: Vergleich der Vor- und Nachteile in der Praxis</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Kriterium</th>
+                                    <th>Weg A · MQTT-Gateway (Funk)</th>
+                                    <th>Weg B · Direktes WLAN (ESP32/Inkplate)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Bildlich gesprochen</strong></td>
+                                    <td>Ein Verteiler nimmt Aufträge an und funkt sie an die Schilder.</td>
+                                    <td>Jedes Schild holt sich sein Bild selbst.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Zusätzliche Hardware</strong></td>
+                                    <td><span class="pill pill-warning">Gateway erforderlich</span></td>
+                                    <td><span class="pill pill-success">Kein Gateway erforderlich</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Firmware auf dem Display</strong></td>
+                                    <td>Häufig nicht nötig bzw. herstellerspezifisch / fix</td>
+                                    <td><span class="pill pill-success">Vollständig anpassbar (Open Source C++/Arduino)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Batterielaufzeit</strong></td>
+                                    <td><span class="pill pill-success">Sehr hoch (Monate bis Jahre durch Sub-GHz Funk)</span></td>
+                                    <td>Mittel (WLAN-Aufwachen kostet ~150mA für 2-3s; Deep Sleep ~15µA)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sofortige Updates</strong></td>
+                                    <td><span class="pill pill-success">Sofort per Gateway-Push</span></td>
+                                    <td>Erst beim nächsten Aufwachen (z.B. alle 15 Min.)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Infrastruktur (150–200 Stück)</strong></td>
+                                    <td>1–2 Gateways decken einen Gastraum/Saal ab</td>
+                                    <td>WLAN-Router muss 200 gleichzeitige Clients/DHCP verkraften</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kostenabschätzung</strong></td>
+                                    <td>Geringerer Stückpreis pro Display + ca. 150–300 € Gateway</td>
+                                    <td>Höherer Stückpreis pro Display; spart Gateway</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>E-Ink Tischkarten Labor · Lokaler Simulator &bull; Entwickelt für das YUPSALE Tischkarten-Projekt</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

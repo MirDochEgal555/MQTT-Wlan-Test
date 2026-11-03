@@ -87,3 +87,23 @@ def test_logs_endpoints(client):
     del_res = client.delete("/api/logs")
     assert del_res.status_code == 200
     assert del_res.json()["status"] == "cleared"
+
+
+def test_static_asset_routes(client):
+    res_css = client.get("/style.css")
+    assert res_css.status_code == 200
+    assert "text/css" in res_css.headers["content-type"]
+
+    res_js = client.get("/app.js")
+    assert res_js.status_code == 200
+    assert "javascript" in res_js.headers["content-type"]
+
+
+def test_build_pages_export():
+    import build_pages
+    build_pages.build()
+    assert os.path.exists("docs/index.html")
+    assert os.path.exists("docs/style.css")
+    assert os.path.exists("docs/app.js")
+    assert os.path.exists("docs/.nojekyll")
+    assert os.path.exists("docs/images/menu.png")

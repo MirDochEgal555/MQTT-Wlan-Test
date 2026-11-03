@@ -320,6 +320,22 @@ async def get_index():
     return JSONResponse({"status": "Frontend not yet written, use API endpoints"})
 
 
+@app.get("/style.css")
+async def get_style():
+    file_path = os.path.join(FRONTEND_DIR, "style.css")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="text/css")
+    raise HTTPException(status_code=404, detail="CSS not found")
+
+
+@app.get("/app.js")
+async def get_app_js():
+    file_path = os.path.join(FRONTEND_DIR, "app.js")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="JS not found")
+
+
 @app.get("/images/{filename}")
 async def get_image(filename: str):
     file_path = os.path.join(IMAGES_DIR, filename)

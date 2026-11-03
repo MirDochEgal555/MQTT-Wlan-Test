@@ -213,6 +213,40 @@ PYTHONPATH=. pytest -v
   python wifi/display_simulator.py --server http://127.0.0.1:8000 --interval 15
   ```
 
+---
+
+## Deployment auf GitHub Pages 🌐
+
+Die Demo kann direkt und ohne laufenden Server als statische Web-App auf **GitHub Pages** gehostet werden. Im Browser übernimmt die integrierte Client-Simulation:
+- **Canvas-basierte E-Ink Bildgenerierung** inklusive 1-Bit Floyd-Steinberg Dithering
+- **Simulierte MQTT-Aufträge** mit Sub-1GHz Funkverzögerung und Protokoll-Log
+- **WLAN Deep-Sleep Polling-Zyklen** mit Live-Countdown und manuellem Aufwecken
+- **Fehlerszenarien** (Gateway offline / WLAN-Ausfall)
+
+### Option A: Automatisches Deployment via GitHub Actions (Empfohlen)
+
+Die Workflow-Datei [`.github/workflows/deploy.yml`](file:///.github/workflows/deploy.yml) ist bereits eingerichtet:
+1. Repository zu GitHub pushen:
+   ```bash
+   git add .
+   git commit -m "Add GitHub Pages deployment"
+   git push origin main
+   ```
+2. Auf GitHub im Repository unter **Settings → Pages**:
+   - **Source:** *GitHub Actions* auswählen.
+3. Der Workflow baut die statische Demo und stellt sie unter `https://<benutzername>.github.io/<repo-name>/` bereit.
+
+### Option B: Direktes Deployment aus dem `docs/`-Ordner
+
+1. Statische Dateien generieren:
+   ```bash
+   python3 build_pages.py
+   ```
+2. Auf GitHub im Repository unter **Settings → Pages**:
+   - **Source:** *Deploy from a branch*
+   - **Branch:** `main` und Ordner `/docs` auswählen.
+   - Auf **Save** klicken – fertig!
+
 ## Entscheidung für YUPSALE
 
 **Noch nicht allein nach der Anzahl der Komponenten entscheiden.** Ein WLAN-Display spart zwar das Gateway, kann aber pro Display teurer sein und andere Anforderungen an die Stromversorgung haben. Eine Gateway-Lösung kann bei vielen Displays wirtschaftlicher sein, bringt jedoch zusätzliche Herstellerabhängigkeiten.

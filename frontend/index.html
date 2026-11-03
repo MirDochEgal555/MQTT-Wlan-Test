@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Ink Tischkarte – Kommunikationslabor</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Hidden Canvas for Client-Side E-Ink Rendering on GitHub Pages -->
+    <canvas id="einkCanvas" width="800" height="480" style="display:none;"></canvas>
+
     <div class="app-container">
         <!-- Top Navigation / Header -->
         <header class="app-header">
@@ -19,17 +22,21 @@
                 </div>
                 <div>
                     <h1>E-INK TISCHKARTE <span class="badge-lab">KOMMUNIKATIONSLABOR</span></h1>
-                    <p class="subtitle">2 Displays · Lokale Simulation · YUPSALE Technologievergleich</p>
+                    <p class="subtitle">2 Displays · Lokale & GitHub Pages Simulation · YUPSALE Technologievergleich</p>
                 </div>
             </div>
             <div class="header-right">
+                <div class="status-pill" id="modeBadge">
+                    <span class="dot dot-green" id="modeDot"></span>
+                    <span id="modeText">Erkenne Modus...</span>
+                </div>
                 <div class="status-pill" id="mqttStatusBadge">
-                    <span class="dot dot-green"></span>
+                    <span class="dot dot-green" id="mqttDot"></span>
                     <span>MQTT Broker: <strong id="mqttPortText">1883</strong></span>
                 </div>
                 <div class="status-pill" id="wsStatusBadge">
                     <span class="dot dot-green" id="wsDot"></span>
-                    <span id="wsText">Live verbunden</span>
+                    <span id="wsText">Simulation aktiv</span>
                 </div>
             </div>
         </header>
@@ -48,7 +55,7 @@
                                 <h2>DISPLAY 001 <span class="device-id">gateway/001</span></h2>
                             </div>
                             <div class="display-status-tag" id="d1StatusTag">
-                                <span class="pulse-indicator"></span>
+                                <span class="pulse-indicator" id="d1Pulse"></span>
                                 <span id="d1StatusText">Gateway verbunden</span>
                             </div>
                         </div>
@@ -57,7 +64,7 @@
                         <div class="eink-mockup-frame">
                             <div class="eink-bezel">
                                 <div class="eink-screen-wrapper" id="d1ScreenWrapper">
-                                    <img id="d1Image" src="/images/menu.png" alt="Display 001 E-Ink Vorschau" class="eink-screen-image">
+                                    <img id="d1Image" src="images/menu.png" alt="Display 001 E-Ink Vorschau" class="eink-screen-image">
                                     <div class="eink-refresh-overlay" id="d1RefreshOverlay"></div>
                                     <div class="eink-offline-overlay" id="d1OfflineOverlay">
                                         <div class="offline-box">
@@ -120,7 +127,7 @@
                         <div class="eink-mockup-frame">
                             <div class="eink-bezel">
                                 <div class="eink-screen-wrapper" id="d2ScreenWrapper">
-                                    <img id="d2Image" src="/images/menu.png" alt="Display 002 E-Ink Vorschau" class="eink-screen-image">
+                                    <img id="d2Image" src="images/menu.png" alt="Display 002 E-Ink Vorschau" class="eink-screen-image">
                                     <div class="eink-refresh-overlay" id="d2RefreshOverlay"></div>
                                     <div class="eink-offline-overlay" id="d2OfflineOverlay">
                                         <div class="offline-box">
@@ -371,10 +378,10 @@
         </main>
 
         <footer class="app-footer">
-            <p>E-Ink Tischkarten Labor · Lokaler Simulator &bull; Entwickelt für das YUPSALE Tischkarten-Projekt</p>
+            <p>E-Ink Tischkarten Labor · GitHub Pages & Lokaler Simulator &bull; Entwickelt für das YUPSALE Tischkarten-Projekt</p>
         </footer>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
